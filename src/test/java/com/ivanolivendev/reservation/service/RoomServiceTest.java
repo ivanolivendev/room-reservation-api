@@ -6,6 +6,7 @@ import com.ivanolivendev.reservation.enums.ReservationStatus;
 import com.ivanolivendev.reservation.enums.RoomType;
 import com.ivanolivendev.reservation.repository.ReservationRepository;
 import com.ivanolivendev.reservation.repository.RoomRepository;
+import com.ivanolivendev.reservation.validation.ReservationValidator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,6 +29,9 @@ class RoomServiceTest {
 
     @Mock
     private ReservationRepository reservationRepository;
+
+    @Mock
+    private ReservationValidator reservationValidator;
 
     @InjectMocks
     private RoomService roomService;
