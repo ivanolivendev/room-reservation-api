@@ -1,0 +1,8 @@
+package com.ivanolivendev.reservation.exception;
+
+public class ResourceNotFoundException extends BusinessException {
+
+    public ResourceNotFoundException(String message) {
+        super(message);
+    }
+}
