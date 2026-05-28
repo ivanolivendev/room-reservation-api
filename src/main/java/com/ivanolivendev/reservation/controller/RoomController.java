@@ -3,6 +3,7 @@ package com.ivanolivendev.reservation.controller;
 import com.ivanolivendev.reservation.dto.request.CreateRoomRequest;
 import com.ivanolivendev.reservation.dto.request.UpdateRoomRequest;
 import com.ivanolivendev.reservation.dto.response.RoomResponse;
+import com.ivanolivendev.reservation.exception.BusinessException;
 import com.ivanolivendev.reservation.mapper.RoomMapper;
 import com.ivanolivendev.reservation.service.RoomService;
 import jakarta.validation.Valid;
@@ -78,6 +79,10 @@ public class RoomController {
             @RequestParam @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime startTime,
             @RequestParam @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime endTime
     ) {
+        if (!startTime.isBefore(endTime)) {
+            throw new BusinessException("Start time must be before end time");
+        }
+
         return roomService.findAvailableRooms(date, startTime, endTime)
                 .stream()
                 .map(roomMapper::toResponse)

@@ -6,6 +6,8 @@ import com.ivanolivendev.reservation.entity.Reservation;
 import com.ivanolivendev.reservation.entity.Room;
 import com.ivanolivendev.reservation.enums.ReservationStatus;
 import com.ivanolivendev.reservation.enums.RoomType;
+import com.ivanolivendev.reservation.exception.BusinessException;
+import com.ivanolivendev.reservation.exception.ConflictException;
 import com.ivanolivendev.reservation.mapper.ReservationMapper;
 import com.ivanolivendev.reservation.mapper.RoomMapper;
 import com.ivanolivendev.reservation.service.ReservationService;
@@ -84,7 +86,40 @@ class ReservationControllerTest {
         mockMvc.perform(post("/reservations")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Request validation failed"))
+                .andExpect(jsonPath("$.path").value("/reservations"))
+                .andExpect(jsonPath("$.details").isArray());
+    }
+
+    @Test
+    void shouldReturnConflictWhenReservationOverlapsExistingReservation() throws Exception {
+        UUID roomId = UUID.randomUUID();
+        LocalDate date = LocalDate.now().plusDays(1);
+        LocalTime startTime = LocalTime.of(9, 0);
+        LocalTime endTime = LocalTime.of(10, 0);
+        CreateReservationRequest request = new CreateReservationRequest(
+                roomId,
+                date,
+                startTime,
+                endTime,
+                "Ivan"
+        );
+
+        when(reservationService.create(roomId, date, startTime, endTime, "Ivan"))
+                .thenThrow(new ConflictException("Room already has an active reservation in this time range"));
+
+        mockMvc.perform(post("/reservations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.error").value("Conflict"))
+                .andExpect(jsonPath("$.message").value("Room already has an active reservation in this time range"))
+                .andExpect(jsonPath("$.path").value("/reservations"))
+                .andExpect(jsonPath("$.details").isArray());
     }
 
     @Test
@@ -134,6 +169,21 @@ class ReservationControllerTest {
         mockMvc.perform(delete("/reservations/{id}", id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CANCELED"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenCancelingAlreadyCanceledReservation() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        when(reservationService.cancel(id)).thenThrow(new BusinessException("Reservation is already canceled"));
+
+        mockMvc.perform(delete("/reservations/{id}", id))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Reservation is already canceled"))
+                .andExpect(jsonPath("$.path").value("/reservations/" + id))
+                .andExpect(jsonPath("$.details").isArray());
     }
 
     @Test

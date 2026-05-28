@@ -5,6 +5,8 @@ import com.ivanolivendev.reservation.dto.request.CreateRoomRequest;
 import com.ivanolivendev.reservation.dto.request.UpdateRoomRequest;
 import com.ivanolivendev.reservation.entity.Room;
 import com.ivanolivendev.reservation.enums.RoomType;
+import com.ivanolivendev.reservation.exception.ConflictException;
+import com.ivanolivendev.reservation.exception.ResourceNotFoundException;
 import com.ivanolivendev.reservation.mapper.RoomMapper;
 import com.ivanolivendev.reservation.service.RoomService;
 import org.junit.jupiter.api.Test;
@@ -66,7 +68,12 @@ class RoomControllerTest {
         mockMvc.perform(post("/rooms")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Request validation failed"))
+                .andExpect(jsonPath("$.path").value("/rooms"))
+                .andExpect(jsonPath("$.details").isArray());
     }
 
     @Test
@@ -90,6 +97,39 @@ class RoomControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id.toString()))
                 .andExpect(jsonPath("$.name").value("Sala Reuniao 01"));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenRoomDoesNotExist() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        when(roomService.findById(id)).thenThrow(new ResourceNotFoundException("Room not found"));
+
+        mockMvc.perform(get("/rooms/{id}", id))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Room not found"))
+                .andExpect(jsonPath("$.path").value("/rooms/" + id))
+                .andExpect(jsonPath("$.details").isArray());
+    }
+
+    @Test
+    void shouldReturnConflictWhenRoomNameAlreadyExists() throws Exception {
+        CreateRoomRequest request = new CreateRoomRequest("Sala Reuniao 01", RoomType.MEETING_ROOM, 8);
+
+        when(roomService.create(request.name(), request.type(), request.capacity()))
+                .thenThrow(new ConflictException("Room name already exists"));
+
+        mockMvc.perform(post("/rooms")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.error").value("Conflict"))
+                .andExpect(jsonPath("$.message").value("Room name already exists"))
+                .andExpect(jsonPath("$.path").value("/rooms"))
+                .andExpect(jsonPath("$.details").isArray());
     }
 
     @Test
@@ -135,6 +175,22 @@ class RoomControllerTest {
                         .param("endTime", "10:00:00"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").value("Sala Livre"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenAvailableRoomsTimeRangeIsInvalid() throws Exception {
+        LocalDate date = LocalDate.now().plusDays(1);
+
+        mockMvc.perform(get("/rooms/available")
+                        .param("date", date.toString())
+                        .param("startTime", "15:00:00")
+                        .param("endTime", "14:00:00"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Start time must be before end time"))
+                .andExpect(jsonPath("$.path").value("/rooms/available"))
+                .andExpect(jsonPath("$.details").isArray());
     }
 
     private Room room(String name) {

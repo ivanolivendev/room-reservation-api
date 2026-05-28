@@ -1,0 +1,270 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-05-27T19:10:00.000Z",
+  "__export_source": "room-reservation-api",
+  "resources": [
+    {
+      "_id": "wrk_room_reservation_api",
+      "_type": "workspace",
+      "name": "Room Reservation API",
+      "description": "Insomnia collection for the Room Reservation API."
+    },
+    {
+      "_id": "env_room_reservation_api_base",
+      "_type": "environment",
+      "parentId": "wrk_room_reservation_api",
+      "name": "Base Environment",
+      "data": {
+        "baseUrl": "http://localhost:8080",
+        "meetingRoomId": "11111111-1111-1111-1111-111111111111",
+        "individualRoomId": "22222222-2222-2222-2222-222222222222",
+        "auditoriumId": "33333333-3333-3333-3333-333333333333",
+        "missingId": "00000000-0000-0000-0000-000000000000",
+        "reservationId": "paste-created-reservation-id-here"
+      }
+    },
+    {
+      "_id": "fld_rooms",
+      "_type": "request_group",
+      "parentId": "wrk_room_reservation_api",
+      "name": "Rooms"
+    },
+    {
+      "_id": "fld_reservations",
+      "_type": "request_group",
+      "parentId": "wrk_room_reservation_api",
+      "name": "Reservations"
+    },
+    {
+      "_id": "req_rooms_create",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "POST /rooms - Create room",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/rooms",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Sala Treinamento 01\",\n  \"type\": \"MEETING_ROOM\",\n  \"capacity\": 20\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_rooms_create_invalid",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "POST /rooms - Validation error 400",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/rooms",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"\",\n  \"type\": null,\n  \"capacity\": 0\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_rooms_create_duplicate",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "POST /rooms - Duplicate name conflict 409",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/rooms",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Sala Reuniao 01\",\n  \"type\": \"MEETING_ROOM\",\n  \"capacity\": 8\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_rooms_find_all",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "GET /rooms - List rooms",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/rooms"
+    },
+    {
+      "_id": "req_rooms_find_by_id",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "GET /rooms/{id} - Find seeded room",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/rooms/{{ _.meetingRoomId }}"
+    },
+    {
+      "_id": "req_rooms_find_missing",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "GET /rooms/{id} - Not found 404",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/rooms/{{ _.missingId }}"
+    },
+    {
+      "_id": "req_rooms_update",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "PUT /rooms/{id} - Update seeded auditorium",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/rooms/{{ _.auditoriumId }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Auditorio Principal Atualizado\",\n  \"type\": \"AUDITORIUM\",\n  \"capacity\": 90,\n  \"active\": true\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_rooms_delete",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "DELETE /rooms/{id} - Deactivate seeded individual room",
+      "method": "DELETE",
+      "url": "{{ _.baseUrl }}/rooms/{{ _.individualRoomId }}"
+    },
+    {
+      "_id": "req_rooms_available",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "GET /rooms/available - Available rooms",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/rooms/available?date=2030-01-15&startTime=14:00:00&endTime=15:00:00"
+    },
+    {
+      "_id": "req_rooms_available_invalid_time",
+      "_type": "request",
+      "parentId": "fld_rooms",
+      "name": "GET /rooms/available - Invalid time 400",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/rooms/available?date=2030-01-15&startTime=15:00:00&endTime=14:00:00"
+    },
+    {
+      "_id": "req_reservations_create",
+      "_type": "request",
+      "parentId": "fld_reservations",
+      "name": "POST /reservations - Create reservation",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/reservations",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"roomId\": \"{{ _.meetingRoomId }}\",\n  \"date\": \"2030-01-15\",\n  \"startTime\": \"09:00:00\",\n  \"endTime\": \"10:00:00\",\n  \"responsibleName\": \"Ivan Cavalcante\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_reservations_create_conflict",
+      "_type": "request",
+      "parentId": "fld_reservations",
+      "name": "POST /reservations - Time conflict 409",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/reservations",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"roomId\": \"{{ _.meetingRoomId }}\",\n  \"date\": \"2030-01-15\",\n  \"startTime\": \"09:30:00\",\n  \"endTime\": \"10:30:00\",\n  \"responsibleName\": \"Maria Souza\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_reservations_create_invalid",
+      "_type": "request",
+      "parentId": "fld_reservations",
+      "name": "POST /reservations - Validation error 400",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/reservations",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"roomId\": null,\n  \"date\": \"2020-01-01\",\n  \"startTime\": null,\n  \"endTime\": null,\n  \"responsibleName\": \"\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "_id": "req_reservations_find_all",
+      "_type": "request",
+      "parentId": "fld_reservations",
+      "name": "GET /reservations - List reservations",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/reservations"
+    },
+    {
+      "_id": "req_reservations_find_by_id",
+      "_type": "request",
+      "parentId": "fld_reservations",
+      "name": "GET /reservations/{id} - Find reservation",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/reservations/{{ _.reservationId }}"
+    },
+    {
+      "_id": "req_reservations_find_missing",
+      "_type": "request",
+      "parentId": "fld_reservations",
+      "name": "GET /reservations/{id} - Not found 404",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/reservations/{{ _.missingId }}"
+    },
+    {
+      "_id": "req_reservations_cancel",
+      "_type": "request",
+      "parentId": "fld_reservations",
+      "name": "DELETE /reservations/{id} - Cancel reservation",
+      "method": "DELETE",
+      "url": "{{ _.baseUrl }}/reservations/{{ _.reservationId }}"
+    },
+    {
+      "_id": "req_reservations_cancel_again",
+      "_type": "request",
+      "parentId": "fld_reservations",
+      "name": "DELETE /reservations/{id} - Already canceled 400",
+      "method": "DELETE",
+      "url": "{{ _.baseUrl }}/reservations/{{ _.reservationId }}"
+    },
+    {
+      "_id": "req_reservations_daily",
+      "_type": "request",
+      "parentId": "fld_reservations",
+      "name": "GET /reservations/daily - Daily schedule",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/reservations/daily?date=2030-01-15"
+    },
+    {
+      "_id": "req_reservations_daily_invalid",
+      "_type": "request",
+      "parentId": "fld_reservations",
+      "name": "GET /reservations/daily - Invalid date 400",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/reservations/daily?date=invalid-date"
+    }
+  ]
+}
