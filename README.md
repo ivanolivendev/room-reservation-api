@@ -1,8 +1,18 @@
 # Room Reservation API
 
+![Java](https://img.shields.io/badge/Java-17-blue)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.5-brightgreen)
+![Database](https://img.shields.io/badge/Database-H2-orange)
+![Docs](https://img.shields.io/badge/Docs-Swagger%20UI-green)
+
 API REST para gerenciamento de reservas de salas de reuniao, salas individuais e auditorios.
 
 O projeto foi desenvolvido para o desafio tecnico FADESP, com foco em uma solucao simples, organizada e funcional para centralizar reservas, reduzir conflitos de agenda e melhorar a confiabilidade do processo.
+
+## Links
+
+- Repositorio: https://github.com/ivanolivendev/room-reservation-api
+- LinkedIn: https://www.linkedin.com/in/ivanolivendev/
 
 ## Visao Geral
 
@@ -75,12 +85,26 @@ ACTIVE
 CANCELED
 ```
 
+## Pre-requisitos
+
+- Java 17 instalado.
+- Git instalado, caso deseje clonar o repositorio.
+- Maven nao precisa estar instalado globalmente, pois o projeto utiliza Maven Wrapper.
+
 ## Como Executar
 
-Na raiz do projeto, execute:
+Na raiz do projeto, execute o comando conforme o seu sistema operacional.
+
+Windows:
 
 ```powershell
 cmd.exe /c mvnw.cmd spring-boot:run
+```
+
+macOS/Linux:
+
+```bash
+./mvnw spring-boot:run
 ```
 
 A API ficara disponivel em:
@@ -277,16 +301,32 @@ Principais status:
 
 ## Testes
 
-Para rodar todos os testes:
+Para rodar todos os testes, execute:
+
+Windows:
 
 ```powershell
 cmd.exe /c mvnw.cmd test
 ```
 
-Para rodar testes especificos:
+macOS/Linux:
+
+```bash
+./mvnw test
+```
+
+Para rodar testes especificos, execute:
+
+Windows:
 
 ```powershell
 cmd.exe /c mvnw.cmd test "-Dtest=ReservationServiceTest,RoomServiceTest"
+```
+
+macOS/Linux:
+
+```bash
+./mvnw test -Dtest=ReservationServiceTest,RoomServiceTest
 ```
 
 Os testes cobrem:
@@ -344,14 +384,11 @@ Um teste rapido pode ser feito pelo endpoint:
 GET https://room-reservation-api-production.up.railway.app/rooms
 ```
 
-A aplicacao esta preparada para ambientes hospedados usando a porta fornecida pela plataforma:
+A mesma URL base pode ser usada no Insomnia ou Postman, substituindo a variavel `baseUrl` por:
 
-```yaml
-server:
-  port: ${PORT:8080}
+```text
+https://room-reservation-api-production.up.railway.app
 ```
-
-Localmente, quando a variavel `PORT` nao esta definida, a API continua subindo em `8080`.
 
 Na Railway, a aplicacao foi publicada usando Java 17, mantendo o ambiente de hospedagem alinhado com a versao configurada no repositorio e com o requisito do desafio. Como o deploy utiliza Railpack, essa versao e definida pela variavel:
 
