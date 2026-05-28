@@ -310,26 +310,36 @@ Tambem existe uma collection do Insomnia em:
 docs/insomnia-room-reservation-api.json
 ```
 
-## Deploy
+## Deploy opcional
 
-O projeto esta pronto para deploy em plataformas como Railway.
+Como complemento a execucao local, o projeto tambem possui uma versao publicada na Railway:
 
-Para ambientes publicados, a aplicacao usa a porta definida pela variavel de ambiente `PORT`:
+```text
+https://room-reservation-api-production.up.railway.app
+```
+
+Um teste rapido pode ser feito pelo endpoint:
+
+```http
+GET https://room-reservation-api-production.up.railway.app/rooms
+```
+
+A aplicacao esta preparada para ambientes hospedados usando a porta fornecida pela plataforma:
 
 ```yaml
 server:
   port: ${PORT:8080}
 ```
 
-Localmente, a API continua subindo em `8080`. Na Railway, a propria plataforma fornece a porta correta.
+Localmente, quando a variavel `PORT` nao esta definida, a API continua subindo em `8080`.
 
-Depois do deploy, acesse:
+Na Railway, o ambiente deve usar Java 17 para ficar alinhado com a versao definida no projeto. Como o deploy utiliza Railpack, isso pode ser configurado pela variavel:
 
 ```text
-https://sua-url-publica/swagger-ui.html
+RAILPACK_JDK_VERSION=17
 ```
 
-Observacao: o projeto usa H2 em memoria para simplificar a avaliacao do desafio. Em ambiente publicado, os dados sao recriados quando a aplicacao reinicia.
+Importante: o banco utilizado e H2 em memoria para facilitar a avaliacao do desafio. Por isso, na versao publicada, os dados podem ser recriados quando a aplicacao reiniciar.
 
 ## Observacoes
 
