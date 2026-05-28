@@ -2,10 +2,19 @@ package com.ivanolivendev.reservation.controller;
 
 import com.ivanolivendev.reservation.dto.request.CreateRoomRequest;
 import com.ivanolivendev.reservation.dto.request.UpdateRoomRequest;
+import com.ivanolivendev.reservation.dto.response.ErrorResponse;
 import com.ivanolivendev.reservation.dto.response.RoomResponse;
 import com.ivanolivendev.reservation.exception.BusinessException;
 import com.ivanolivendev.reservation.mapper.RoomMapper;
 import com.ivanolivendev.reservation.service.RoomService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +41,7 @@ import java.util.UUID;
 @Validated
 @RequiredArgsConstructor
 @RequestMapping("/rooms")
+@Tag(name = "Rooms", description = "Cadastro, consulta, atualizacao e disponibilidade de salas.")
 public class RoomController {
 
     private final RoomService roomService;
@@ -39,11 +49,73 @@ public class RoomController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public RoomResponse create(@Valid @RequestBody CreateRoomRequest request) {
+    @Operation(
+            summary = "Cadastrar sala",
+            description = "Cria uma nova sala ativa. O nome deve ser unico e a capacidade deve ser maior que zero.",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Sala criada com sucesso",
+                            content = @Content(
+                                    schema = @Schema(implementation = RoomResponse.class),
+                                    examples = @ExampleObject(name = "Sala criada", value = """
+                                            {
+                                              "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                                              "name": "Sala Treinamento 03",
+                                              "type": "MEETING_ROOM",
+                                              "capacity": 20,
+                                              "active": true,
+                                              "createdAt": "2026-05-28T11:00:00",
+                                              "updatedAt": null
+                                            }
+                                            """)
+                            )),
+                    @ApiResponse(responseCode = "400", description = "Payload invalido",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "409", description = "Nome de sala ja cadastrado",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    public RoomResponse create(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Dados da sala que sera cadastrada.",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = CreateRoomRequest.class),
+                            examples = @ExampleObject(name = "Sala de reuniao", value = """
+                                    {
+                                      "name": "Sala Treinamento 03",
+                                      "type": "MEETING_ROOM",
+                                      "capacity": 20
+                                    }
+                                    """)
+                    )
+            )
+            @Valid @RequestBody CreateRoomRequest request
+    ) {
         return roomMapper.toResponse(roomService.create(request.name(), request.type(), request.capacity()));
     }
 
     @GetMapping
+    @Operation(
+            summary = "Listar salas",
+            description = "Retorna todas as salas cadastradas. Use este endpoint para obter IDs validos de salas.",
+            responses = @ApiResponse(responseCode = "200", description = "Salas retornadas com sucesso",
+                    content = @Content(
+                            array = @ArraySchema(schema = @Schema(implementation = RoomResponse.class)),
+                            examples = @ExampleObject(name = "Lista de salas", value = """
+                                    [
+                                      {
+                                        "id": "11111111-1111-1111-1111-111111111111",
+                                        "name": "Sala Reuniao 01",
+                                        "type": "MEETING_ROOM",
+                                        "capacity": 8,
+                                        "active": true,
+                                        "createdAt": "2026-05-28T11:00:00",
+                                        "updatedAt": null
+                                      }
+                                    ]
+                                    """)
+                    ))
+    )
     public List<RoomResponse> findAll() {
         return roomService.findAll()
                 .stream()
@@ -52,12 +124,60 @@ public class RoomController {
     }
 
     @GetMapping("/{id}")
-    public RoomResponse findById(@PathVariable UUID id) {
+    @Operation(
+            summary = "Buscar sala por ID",
+            description = "Retorna os detalhes de uma sala especifica.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Sala encontrada",
+                            content = @Content(schema = @Schema(implementation = RoomResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "UUID invalido",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "Sala nao encontrada",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    public RoomResponse findById(
+            @Parameter(description = "UUID da sala. Use um ID retornado por GET /rooms.", example = "11111111-1111-1111-1111-111111111111")
+            @PathVariable UUID id
+    ) {
         return roomMapper.toResponse(roomService.findById(id));
     }
 
     @PutMapping("/{id}")
-    public RoomResponse update(@PathVariable UUID id, @Valid @RequestBody UpdateRoomRequest request) {
+    @Operation(
+            summary = "Atualizar sala",
+            description = "Atualiza os dados completos de uma sala existente, incluindo o status ativo/inativo.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Sala atualizada com sucesso",
+                            content = @Content(schema = @Schema(implementation = RoomResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "Payload invalido",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "Sala nao encontrada",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "409", description = "Nome de sala ja cadastrado",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    public RoomResponse update(
+            @Parameter(description = "UUID da sala. Use um ID retornado por GET /rooms.", example = "11111111-1111-1111-1111-111111111111")
+            @PathVariable UUID id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Dados completos para atualizacao da sala.",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = UpdateRoomRequest.class),
+                            examples = @ExampleObject(name = "Atualizacao de sala", value = """
+                                    {
+                                      "name": "Sala Treinamento 03",
+                                      "type": "MEETING_ROOM",
+                                      "capacity": 24,
+                                      "active": true
+                                    }
+                                    """)
+                    )
+            )
+            @Valid @RequestBody UpdateRoomRequest request
+    ) {
         return roomMapper.toResponse(roomService.update(
                 id,
                 request.name(),
@@ -69,14 +189,69 @@ public class RoomController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id) {
+    @Operation(
+            summary = "Desativar sala",
+            description = "Desativa uma sala sem remover o registro do banco. Salas inativas nao recebem novas reservas.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "Sala desativada com sucesso",
+                            content = @Content),
+                    @ApiResponse(responseCode = "400", description = "UUID invalido",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "Sala nao encontrada",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    public void delete(
+            @Parameter(description = "UUID da sala. Use um ID retornado por GET /rooms.", example = "11111111-1111-1111-1111-111111111111")
+            @PathVariable UUID id
+    ) {
         roomService.deactivate(id);
     }
 
     @GetMapping("/available")
+    @Operation(
+            summary = "Consultar salas disponiveis",
+            description = "Retorna salas ativas sem reserva conflitante para a data e faixa de horario informadas.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Salas disponiveis retornadas com sucesso",
+                            content = @Content(
+                                    array = @ArraySchema(schema = @Schema(implementation = RoomResponse.class)),
+                                    examples = @ExampleObject(name = "Salas disponiveis", value = """
+                                            [
+                                              {
+                                                "id": "11111111-1111-1111-1111-111111111111",
+                                                "name": "Sala Reuniao 01",
+                                                "type": "MEETING_ROOM",
+                                                "capacity": 8,
+                                                "active": true,
+                                                "createdAt": "2026-05-28T11:00:00",
+                                                "updatedAt": null
+                                              }
+                                            ]
+                                            """)
+                            )),
+                    @ApiResponse(responseCode = "400", description = "Parametros invalidos ou faixa de horario invalida",
+                            content = @Content(
+                                    schema = @Schema(implementation = ErrorResponse.class),
+                                    examples = @ExampleObject(value = """
+                                            {
+                                              "timestamp": "2026-05-28T11:10:00",
+                                              "status": 400,
+                                              "error": "Bad Request",
+                                              "message": "Start time must be before end time",
+                                              "path": "/rooms/available",
+                                              "details": []
+                                            }
+                                            """)
+                            ))
+            }
+    )
     public List<RoomResponse> findAvailableRooms(
+            @Parameter(description = "Data desejada para a reserva.", example = "2030-01-15")
             @RequestParam @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @Parameter(description = "Horario inicial desejado.", example = "14:00:00")
             @RequestParam @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime startTime,
+            @Parameter(description = "Horario final desejado.", example = "15:00:00")
             @RequestParam @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime endTime
     ) {
         if (!startTime.isBefore(endTime)) {

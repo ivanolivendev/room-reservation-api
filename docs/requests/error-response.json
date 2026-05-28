@@ -1,0 +1,8 @@
+{
+  "timestamp": "2026-05-28T11:10:00",
+  "status": 409,
+  "error": "Conflict",
+  "message": "Room already has an active reservation in this time range",
+  "path": "/reservations",
+  "details": []
+}
