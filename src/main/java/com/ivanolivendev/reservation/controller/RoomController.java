@@ -166,12 +166,12 @@ public class RoomController {
                     required = true,
                     content = @Content(
                             schema = @Schema(implementation = UpdateRoomRequest.class),
-                            examples = @ExampleObject(name = "Atualizacao de sala", value = """
-                                    {
-                                      "name": "Sala Treinamento 03",
-                                      "type": "MEETING_ROOM",
-                                      "capacity": 24,
-                                      "active": true
+                                    examples = @ExampleObject(name = "Atualizacao de sala", value = """
+                                            {
+                                              "name": "Sala Treinamento 03 Atualizada",
+                                              "type": "MEETING_ROOM",
+                                              "capacity": 24,
+                                              "active": true
                                     }
                                     """)
                     )

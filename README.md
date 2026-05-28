@@ -152,6 +152,14 @@ A migration inicial cria:
 
 A segunda migration insere salas iniciais para facilitar os testes.
 
+Salas iniciais disponiveis:
+
+| ID | Nome | Tipo | Capacidade |
+| --- | --- | --- | --- |
+| `11111111-1111-1111-1111-111111111111` | Sala Reuniao 01 | `MEETING_ROOM` | 8 |
+| `22222222-2222-2222-2222-222222222222` | Sala Individual 01 | `INDIVIDUAL_ROOM` | 1 |
+| `33333333-3333-3333-3333-333333333333` | Auditorio Principal | `AUDITORIUM` | 80 |
+
 ## Endpoints
 
 ### Salas
@@ -201,7 +209,7 @@ Content-Type: application/json
 
 ```json
 {
-  "name": "Sala Treinamento 03",
+  "name": "Sala Treinamento 03 Atualizada",
   "type": "MEETING_ROOM",
   "capacity": 24,
   "active": true
@@ -295,7 +303,7 @@ Os testes cobrem:
 
 ## Exemplos Prontos
 
-Payloads de exemplo estao disponiveis em:
+Payloads de exemplo estao disponiveis para facilitar os testes manuais pelo Swagger, Insomnia ou Postman:
 
 ```text
 docs/requests/create-room.json
@@ -303,6 +311,18 @@ docs/requests/update-room.json
 docs/requests/create-reservation.json
 docs/requests/error-response.json
 ```
+
+Com esses exemplos, e possivel testar os principais fluxos da API:
+
+- criar sala;
+- atualizar sala;
+- consultar salas disponiveis;
+- criar reserva;
+- consultar agenda diaria;
+- cancelar reserva;
+- validar respostas de erro.
+
+Os endpoints de consulta e cancelamento nao exigem payload no corpo da requisicao. Para rotas com `{id}`, use um identificador retornado nas respostas de `GET /rooms`, `POST /rooms`, `GET /reservations` ou `POST /reservations`.
 
 Tambem existe uma collection do Insomnia em:
 
@@ -333,7 +353,7 @@ server:
 
 Localmente, quando a variavel `PORT` nao esta definida, a API continua subindo em `8080`.
 
-Na Railway, o ambiente deve usar Java 17 para ficar alinhado com a versao definida no projeto. Como o deploy utiliza Railpack, isso pode ser configurado pela variavel:
+Na Railway, a aplicacao foi publicada usando Java 17, mantendo o ambiente de hospedagem alinhado com a versao configurada no repositorio e com o requisito do desafio. Como o deploy utiliza Railpack, essa versao e definida pela variavel:
 
 ```text
 RAILPACK_JDK_VERSION=17
