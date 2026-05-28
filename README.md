@@ -88,12 +88,36 @@ CANCELED
 ## Pre-requisitos
 
 - Java 17 instalado.
-- Git instalado, caso deseje clonar o repositorio.
+- Git instalado para clonar o repositorio.
 - Maven nao precisa estar instalado globalmente, pois o projeto utiliza Maven Wrapper.
 
 ## Como Executar
 
-Na raiz do projeto, execute o comando conforme o seu sistema operacional.
+### 1. Clonar o repositorio
+
+```bash
+git clone https://github.com/ivanolivendev/room-reservation-api.git
+```
+
+### 2. Acessar a pasta do projeto
+
+```bash
+cd room-reservation-api
+```
+
+### 3. Conferir a versao do Java
+
+O projeto utiliza Java 17. Para conferir a versao instalada:
+
+```bash
+java -version
+```
+
+A saida deve indicar Java 17.
+
+### 4. Executar a aplicacao
+
+Na raiz do projeto, execute o comando conforme o sistema operacional.
 
 Windows:
 
@@ -107,19 +131,27 @@ macOS/Linux:
 ./mvnw spring-boot:run
 ```
 
-A API ficara disponivel em:
+### 5. Acessar a API
+
+Com a aplicacao rodando, a API ficara disponivel em:
 
 ```text
 http://localhost:8080
 ```
 
-## Swagger
-
-Com a aplicacao rodando, acesse:
+O Swagger pode ser acessado em:
 
 ```text
 http://localhost:8080/swagger-ui.html
 ```
+
+O H2 Console pode ser acessado em:
+
+```text
+http://localhost:8080/h2-console
+```
+
+## Swagger
 
 O Swagger documenta:
 
@@ -131,12 +163,6 @@ O Swagger documenta:
 - respostas de erro padronizadas.
 
 ## H2 Console
-
-Com a aplicacao rodando, acesse:
-
-```text
-http://localhost:8080/h2-console
-```
 
 Use as credenciais:
 
@@ -206,6 +232,17 @@ Salas iniciais disponiveis:
 | GET | `/reservations/{id}` | Busca uma reserva por ID |
 | DELETE | `/reservations/{id}` | Cancela uma reserva |
 | GET | `/reservations/daily` | Consulta agenda diaria |
+
+## Fluxo recomendado para avaliacao
+
+1. Execute a aplicacao localmente.
+2. Acesse o Swagger em `http://localhost:8080/swagger-ui.html`.
+3. Liste as salas em `GET /rooms`.
+4. Crie uma reserva em `POST /reservations` usando o ID de uma sala ativa.
+5. Tente criar outra reserva para a mesma sala, data e horario para validar o conflito.
+6. Consulte a agenda diaria em `GET /reservations/daily`.
+7. Consulte salas disponiveis em `GET /rooms/available`.
+8. Cancele a reserva em `DELETE /reservations/{id}`.
 
 ## Exemplos de Uso
 
