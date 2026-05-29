@@ -263,6 +263,8 @@ Content-Type: application/json
 }
 ```
 
+Resposta esperada: `201 Created`, com o corpo da sala criada e header `Location` apontando para `/rooms/{id}`.
+
 ### Atualizar sala
 
 ```http
@@ -302,6 +304,8 @@ Content-Type: application/json
 }
 ```
 
+Resposta esperada: `201 Created`, com o corpo da reserva criada e header `Location` apontando para `/reservations/{id}`.
+
 ### Consultar agenda diaria
 
 ```http
@@ -333,9 +337,9 @@ Principais status:
 
 | Status | Quando ocorre |
 | --- | --- |
-| 400 | Payload invalido, parametro invalido ou regra de negocio violada |
+| 400 | Payload invalido, parametro ausente/invalido, data no passado, faixa de horario invalida ou sala inativa para reserva |
 | 404 | Sala ou reserva nao encontrada |
-| 409 | Conflito de horario ou nome de sala duplicado |
+| 409 | Conflito de horario, nome de sala duplicado ou tentativa de cancelar uma reserva ja cancelada |
 | 500 | Erro inesperado |
 
 ## Testes
@@ -401,7 +405,7 @@ Com esses exemplos, e possivel testar os principais fluxos da API:
 - cancelar reserva;
 - validar respostas de erro.
 
-Os endpoints de consulta e cancelamento nao exigem payload no corpo da requisicao. Para rotas com `{id}`, use um identificador retornado nas respostas de `GET /rooms`, `POST /rooms`, `GET /reservations` ou `POST /reservations`.
+Os endpoints de consulta e cancelamento nao exigem payload no corpo da requisicao. Para rotas de salas com `{id}`, use um identificador retornado por `GET /rooms` ou `POST /rooms`. Para rotas de reservas com `{id}`, use um identificador retornado por `GET /reservations` ou `POST /reservations`.
 
 Tambem existe uma collection do Insomnia em:
 
