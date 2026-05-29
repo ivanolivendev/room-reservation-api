@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Schema(description = "Payload para criacao de uma reserva.")
 public record CreateReservationRequest(
-        @Schema(description = "UUID da sala. Use um ID retornado por GET /rooms.", example = "11111111-1111-1111-1111-111111111111")
+        @Schema(description = "Identificador unico da sala no formato UUID.", example = "11111111-1111-1111-1111-111111111111")
         @NotNull
         UUID roomId,
 

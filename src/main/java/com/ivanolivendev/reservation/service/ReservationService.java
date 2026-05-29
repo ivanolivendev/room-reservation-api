@@ -3,7 +3,7 @@ package com.ivanolivendev.reservation.service;
 import com.ivanolivendev.reservation.entity.Reservation;
 import com.ivanolivendev.reservation.entity.Room;
 import com.ivanolivendev.reservation.enums.ReservationStatus;
-import com.ivanolivendev.reservation.exception.BusinessException;
+import com.ivanolivendev.reservation.exception.ConflictException;
 import com.ivanolivendev.reservation.exception.ResourceNotFoundException;
 import com.ivanolivendev.reservation.repository.ReservationRepository;
 import com.ivanolivendev.reservation.validation.ReservationValidator;
@@ -60,7 +60,7 @@ public class ReservationService {
         Reservation reservation = findById(id);
 
         if (ReservationStatus.CANCELED.equals(reservation.getStatus())) {
-            throw new BusinessException("Reservation is already canceled");
+            throw new ConflictException("Reservation is already canceled");
         }
 
         reservation.setStatus(ReservationStatus.CANCELED);

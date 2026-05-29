@@ -4,7 +4,6 @@ import com.ivanolivendev.reservation.entity.Reservation;
 import com.ivanolivendev.reservation.entity.Room;
 import com.ivanolivendev.reservation.enums.ReservationStatus;
 import com.ivanolivendev.reservation.enums.RoomType;
-import com.ivanolivendev.reservation.exception.BusinessException;
 import com.ivanolivendev.reservation.exception.ConflictException;
 import com.ivanolivendev.reservation.repository.ReservationRepository;
 import com.ivanolivendev.reservation.validation.ReservationValidator;
@@ -101,7 +100,7 @@ class ReservationServiceTest {
     }
 
     @Test
-    void shouldThrowBusinessExceptionWhenCancelingAlreadyCanceledReservation() {
+    void shouldThrowConflictExceptionWhenCancelingAlreadyCanceledReservation() {
         UUID reservationId = UUID.randomUUID();
         Reservation reservation = Reservation.builder()
                 .room(room)
@@ -115,7 +114,7 @@ class ReservationServiceTest {
         when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
 
         assertThatThrownBy(() -> reservationService.cancel(reservationId))
-                .isInstanceOf(BusinessException.class)
+                .isInstanceOf(ConflictException.class)
                 .hasMessage("Reservation is already canceled");
     }
 

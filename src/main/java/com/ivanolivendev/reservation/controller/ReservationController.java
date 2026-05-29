@@ -7,6 +7,7 @@ import com.ivanolivendev.reservation.mapper.ReservationMapper;
 import com.ivanolivendev.reservation.service.ReservationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -17,7 +18,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,9 +27,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -44,12 +45,17 @@ public class ReservationController {
     private final ReservationMapper reservationMapper;
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
     @Operation(
+            operationId = "createReservation",
             summary = "Criar reserva",
             description = "Cria uma reserva ativa. Valida sala existente, sala ativa, data futura, horario valido e conflito de agenda.",
             responses = {
                     @ApiResponse(responseCode = "201", description = "Reserva criada com sucesso",
+                            headers = @Header(
+                                    name = "Location",
+                                    description = "URI do recurso criado.",
+                                    schema = @Schema(type = "string", example = "/reservations/44444444-4444-4444-4444-444444444444")
+                            ),
                             content = @Content(
                                     schema = @Schema(implementation = ReservationResponse.class),
                                     examples = @ExampleObject(name = "Reserva criada", value = """
@@ -94,7 +100,7 @@ public class ReservationController {
                             ))
             }
     )
-    public ReservationResponse create(
+    public ResponseEntity<ReservationResponse> create(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Dados da reserva que sera criada.",
                     required = true,
@@ -113,17 +119,19 @@ public class ReservationController {
             )
             @Valid @RequestBody CreateReservationRequest request
     ) {
-        return reservationMapper.toResponse(reservationService.create(
+        ReservationResponse response = reservationMapper.toResponse(reservationService.create(
                 request.roomId(),
                 request.date(),
                 request.startTime(),
                 request.endTime(),
                 request.responsibleName()
         ));
+        return ResponseEntity.created(URI.create("/reservations/" + response.id())).body(response);
     }
 
     @GetMapping
     @Operation(
+            operationId = "listReservations",
             summary = "Listar reservas",
             description = "Retorna todas as reservas cadastradas, incluindo reservas ativas e canceladas.",
             responses = @ApiResponse(responseCode = "200", description = "Reservas retornadas com sucesso",
@@ -163,6 +171,7 @@ public class ReservationController {
 
     @GetMapping("/{id}")
     @Operation(
+            operationId = "getReservation",
             summary = "Buscar reserva por ID",
             description = "Retorna os detalhes de uma reserva especifica.",
             responses = {
@@ -175,7 +184,7 @@ public class ReservationController {
             }
     )
     public ReservationResponse findById(
-            @Parameter(description = "UUID da reserva. Use um ID retornado por POST /reservations ou GET /reservations.", example = "44444444-4444-4444-4444-444444444444")
+            @Parameter(description = "Identificador unico da reserva no formato UUID.", example = "44444444-4444-4444-4444-444444444444")
             @PathVariable UUID id
     ) {
         return reservationMapper.toResponse(reservationService.findById(id));
@@ -183,6 +192,7 @@ public class ReservationController {
 
     @DeleteMapping("/{id}")
     @Operation(
+            operationId = "cancelReservation",
             summary = "Cancelar reserva",
             description = "Cancela uma reserva de forma logica, alterando o status para CANCELED.",
             responses = {
@@ -211,14 +221,14 @@ public class ReservationController {
                                             }
                                             """)
                             )),
-                    @ApiResponse(responseCode = "400", description = "Reserva ja cancelada",
+                    @ApiResponse(responseCode = "409", description = "Reserva ja cancelada",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "404", description = "Reserva nao encontrada",
                             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
     public ReservationResponse cancel(
-            @Parameter(description = "UUID da reserva. Use um ID retornado por POST /reservations ou GET /reservations.", example = "44444444-4444-4444-4444-444444444444")
+            @Parameter(description = "Identificador unico da reserva no formato UUID.", example = "44444444-4444-4444-4444-444444444444")
             @PathVariable UUID id
     ) {
         return reservationMapper.toResponse(reservationService.cancel(id));
@@ -226,6 +236,7 @@ public class ReservationController {
 
     @GetMapping("/daily")
     @Operation(
+            operationId = "getDailyAgenda",
             summary = "Consultar agenda diaria",
             description = "Retorna as reservas ativas de uma data especifica. Reservas canceladas nao aparecem na agenda diaria.",
             responses = {

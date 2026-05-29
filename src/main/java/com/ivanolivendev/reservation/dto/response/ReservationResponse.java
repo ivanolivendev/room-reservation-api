@@ -34,7 +34,7 @@ public record ReservationResponse(
         @Schema(description = "Data e hora de criacao do registro.", example = "2026-05-28T11:00:00")
         LocalDateTime createdAt,
 
-        @Schema(description = "Data e hora da ultima atualizacao do registro.", example = "2026-05-28T11:30:00")
+        @Schema(description = "Data e hora da ultima atualizacao do registro.", example = "2026-05-28T11:30:00", nullable = true)
         LocalDateTime updatedAt
 ) {
 }

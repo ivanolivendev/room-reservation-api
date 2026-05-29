@@ -201,6 +201,7 @@ A migration inicial cria:
 - `reservations`
 
 A segunda migration insere salas iniciais para facilitar os testes.
+Assim, ao iniciar a aplicacao, o avaliador ja encontra dados de exemplo no banco H2 em memoria. Tambem e possivel cadastrar uma nova sala manualmente pelo endpoint `POST /rooms`.
 
 Salas iniciais disponiveis:
 
@@ -237,12 +238,13 @@ Salas iniciais disponiveis:
 
 1. Execute a aplicacao localmente.
 2. Acesse o Swagger em `http://localhost:8080/swagger-ui.html`.
-3. Liste as salas em `GET /rooms`.
-4. Crie uma reserva em `POST /reservations` usando o ID de uma sala ativa.
-5. Tente criar outra reserva para a mesma sala, data e horario para validar o conflito.
-6. Consulte a agenda diaria em `GET /reservations/daily`.
-7. Consulte salas disponiveis em `GET /rooms/available`.
-8. Cancele a reserva em `DELETE /reservations/{id}`.
+3. Cadastre uma nova sala em `POST /rooms` ou use uma das salas iniciais carregadas pela migration `V2__seed_rooms.sql`.
+4. Liste as salas em `GET /rooms` para obter o ID de uma sala ativa.
+5. Crie uma reserva em `POST /reservations` usando o ID da sala.
+6. Tente criar outra reserva para a mesma sala, data e horario para validar o conflito.
+7. Consulte a agenda diaria em `GET /reservations/daily`.
+8. Consulte salas disponiveis em `GET /rooms/available`.
+9. Cancele a reserva em `DELETE /reservations/{id}`.
 
 ## Exemplos de Uso
 
@@ -407,7 +409,7 @@ Tambem existe uma collection do Insomnia em:
 docs/insomnia-room-reservation-api.json
 ```
 
-## Deploy opcional
+## Entrega extra: demonstracao online
 
 Como complemento a execucao local, o projeto tambem possui uma versao publicada na Railway:
 
@@ -421,11 +423,7 @@ Um teste rapido pode ser feito pelo endpoint:
 GET https://room-reservation-api-production.up.railway.app/rooms
 ```
 
-A mesma URL base pode ser usada no Insomnia ou Postman, substituindo a variavel `baseUrl` por:
-
-```text
-https://room-reservation-api-production.up.railway.app
-```
+Para testar pelo Insomnia ou Postman, use `https://room-reservation-api-production.up.railway.app` como URL base da API.
 
 Na Railway, a aplicacao foi publicada usando Java 17, mantendo o ambiente de hospedagem alinhado com a versao configurada no repositorio e com o requisito do desafio. Como o deploy utiliza Railpack, essa versao e definida pela variavel:
 

@@ -6,7 +6,6 @@ import com.ivanolivendev.reservation.entity.Reservation;
 import com.ivanolivendev.reservation.entity.Room;
 import com.ivanolivendev.reservation.enums.ReservationStatus;
 import com.ivanolivendev.reservation.enums.RoomType;
-import com.ivanolivendev.reservation.exception.BusinessException;
 import com.ivanolivendev.reservation.exception.ConflictException;
 import com.ivanolivendev.reservation.mapper.ReservationMapper;
 import com.ivanolivendev.reservation.mapper.RoomMapper;
@@ -28,6 +27,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -65,6 +65,7 @@ class ReservationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
+                .andExpect(header().string("Location", "/reservations/" + reservation.getId()))
                 .andExpect(jsonPath("$.date").value(date.toString()))
                 .andExpect(jsonPath("$.startTime").value("09:00:00"))
                 .andExpect(jsonPath("$.endTime").value("10:00:00"))
@@ -172,15 +173,15 @@ class ReservationControllerTest {
     }
 
     @Test
-    void shouldReturnBadRequestWhenCancelingAlreadyCanceledReservation() throws Exception {
+    void shouldReturnConflictWhenCancelingAlreadyCanceledReservation() throws Exception {
         UUID id = UUID.randomUUID();
 
-        when(reservationService.cancel(id)).thenThrow(new BusinessException("Reservation is already canceled"));
+        when(reservationService.cancel(id)).thenThrow(new ConflictException("Reservation is already canceled"));
 
         mockMvc.perform(delete("/reservations/{id}", id))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.error").value("Conflict"))
                 .andExpect(jsonPath("$.message").value("Reservation is already canceled"))
                 .andExpect(jsonPath("$.path").value("/reservations/" + id))
                 .andExpect(jsonPath("$.details").isArray());
